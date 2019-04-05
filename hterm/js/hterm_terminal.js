@@ -3048,8 +3048,8 @@ hterm.Terminal.prototype.hideOverlay = function() {
 /**
  * Paste from the system clipboard to the terminal.
  */
-hterm.Terminal.prototype.paste = function() {
-  return hterm.pasteFromClipboard(this.document_);
+hterm.Terminal.prototype.paste = function(mousePaste) {
+  return hterm.pasteFromClipboard(this.document_, mousePaste);
 };
 
 /**
@@ -3059,11 +3059,11 @@ hterm.Terminal.prototype.paste = function() {
  *
  * @param {string} str The string to copy.
  */
-hterm.Terminal.prototype.copyStringToClipboard = function(str) {
+hterm.Terminal.prototype.copyStringToClipboard = function(str, ismouse) {
   if (this.prefs_.get('enable-clipboard-notice'))
     setTimeout(this.showOverlay.bind(this, hterm.notifyCopyMessage, 500), 200);
 
-  hterm.copySelectionToClipboard(this.document_, str);
+  hterm.copySelectionToClipboard(this.document_, str, ismouse);
 };
 
 /**
@@ -3358,10 +3358,10 @@ hterm.Terminal.prototype.getSelectionText = function() {
  * Copy the current selection to the system clipboard, then clear it after a
  * short delay.
  */
-hterm.Terminal.prototype.copySelectionToClipboard = function() {
+hterm.Terminal.prototype.copySelectionToClipboard = function(ismouse) {
   var text = this.getSelectionText();
   if (text != null)
-    this.copyStringToClipboard(text);
+    this.copyStringToClipboard(text, ismouse);
 };
 
 hterm.Terminal.prototype.overlaySize = function() {
@@ -3534,7 +3534,7 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
     if (e.type == 'dblclick') {
       this.screen_.expandSelection(this.document_.getSelection());
       if (this.copyOnSelect)
-        this.copySelectionToClipboard();
+        this.copySelectionToClipboard(true);
     }
 
     if (e.type == 'click' && !e.shiftKey && (e.ctrlKey || e.metaKey)) {
@@ -3553,14 +3553,14 @@ hterm.Terminal.prototype.onMouse_ = function(e) {
         this.contextMenu.show(e, this);
       } else if (e.button == this.mousePasteButton ||
           (this.mouseRightClickPaste && e.button == 2 /* right button */)) {
-        if (!this.paste())
+        if (!this.paste(true))
           console.warn('Could not paste manually due to web restrictions');
       }
     }
 
     if (e.type == 'mouseup' && e.button == 0 && this.copyOnSelect &&
         !this.document_.getSelection().isCollapsed) {
-      this.copySelectionToClipboard();
+      this.copySelectionToClipboard(true);
     }
 
     if ((e.type == 'mousemove' || e.type == 'mouseup') &&
@@ -3688,7 +3688,7 @@ hterm.Terminal.prototype.onPaste_ = function(e) {
 hterm.Terminal.prototype.onCopy_ = function(e) {
   if (!this.useDefaultWindowCopy) {
     e.preventDefault();
-    setTimeout(this.copySelectionToClipboard.bind(this), 0);
+    setTimeout(this.copySelectionToClipboard.bind(this, false), 0);
   }
 };
 

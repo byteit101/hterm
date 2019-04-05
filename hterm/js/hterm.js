@@ -155,7 +155,7 @@ hterm.getClientHeight = function(dom) {
  * @param {HTMLDocument} document The document with the selection to copy.
  * @param {string} str The string data to copy out.
  */
-hterm.copySelectionToClipboard = function(document, str) {
+hterm.copySelectionToClipboard = function(document, str, ismouse) {
   // Request permission if need be.
   const requestPermission = () => {
     // Use the Permissions API if available.
@@ -268,7 +268,7 @@ hterm.copySelectionToClipboard = function(document, str) {
  * @param {HTMLDocument} The document to paste into.
  * @return {boolean} True if the paste succeeded.
  */
-hterm.pasteFromClipboard = function(document) {
+hterm.pasteFromClipboard = function(document, ismouse) {
   try {
     return document.execCommand('paste');
   } catch (firefoxException) {
